@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Offline - Register PO</title>
+    <style>
+        body {
+            font-family: system-ui, Arial, sans-serif;
+            background: #F3F5F9;
+            color: #1B2333;
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+            margin: 0;
+            text-align: center;
+            padding: 1rem
+        }
+
+        .c {
+            background: #fff;
+            border-radius: .75rem;
+            padding: 2rem;
+            max-width: 22rem;
+            box-shadow: 0 1px 3px rgba(16, 24, 40, .1)
+        }
+
+        img {
+            width: 5rem;
+            height: 5rem
+        }
+
+        button {
+            background: #1F3864;
+            color: #fff;
+            border: 0;
+            border-radius: .5rem;
+            padding: .6rem 1.2rem;
+            font-size: 1rem;
+            cursor: pointer
+        }
+    </style>
+</head>
+
+<body>
+    <div class="c"><img src="img/starion.png" alt="Starion">
+        <h1>Tidak ada koneksi</h1>
+        <p>Aplikasi butuh koneksi ke server kantor. Periksa jaringan lalu coba lagi.</p>
+        <button onclick="location.reload()">Coba lagi</button>
+    </div>
+</body>
+
+</html>
