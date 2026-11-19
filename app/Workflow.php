@@ -70,7 +70,7 @@ class Workflow
             $snapshot = [
                 'status' => $d['status'], 'subject' => $d['subject'], 'vendor' => $d['vendor'],
                 'vendor_address' => isset($d['vendor_address']) ? $d['vendor_address'] : null, 'body' => isset($d['body']) ? $d['body'] : null,
-                'pay_type' => $d['pay_type'], 'w5' => Document::w5($d), 'items' => Document::items($d['id']),
+                'pay_type' => $d['pay_type'], 'discount' => isset($d['discount']) ? $d['discount'] : 0, 'w5' => Document::w5($d), 'items' => Document::items($d['id']),
                 'local_at' => $d['local_at'], 'korea_result' => $d['korea_result'],
             ];
             DB::run('INSERT INTO document_revisions (document_id, revision, snapshot, reason, created_by, created_at) VALUES (?,?,?,?,?,?)',
