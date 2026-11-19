@@ -164,6 +164,13 @@ function parse_doc_input($type, $deptId)
         if (in_array($pay, ['cash', 'tempo'], true)) { $in['pay_type'] = $pay; } else { $errors[] = 'Tipe bayar tidak valid.'; }
     }
 
+    $in['discount'] = 0.0;
+    $disc = trim((string) post('discount', ''));
+    if ($type === 'PO' && $disc !== '') {
+        if (is_numeric($disc) && (float) $disc >= 0) { $in['discount'] = round((float) $disc, 2); }
+        else { $errors[] = 'Diskon harus angka dan tidak boleh negatif.'; }
+    }
+
     $in['ref_document_id'] = null;
     $ref = post('ref_document_id', '');
     if ($type === 'PO' && $ref !== '') {
@@ -208,6 +215,7 @@ function parse_doc_input($type, $deptId)
         $items[] = ['name' => $name, 'qty' => (float) $qty, 'unit' => $unit, 'price' => (float) $price];
     }
     if ($type === 'PO' && !$items) { $errors[] = 'Isi minimal satu barang.'; }
+    if ($type === 'PO' && $items && $in['discount'] > Document::total($items)) { $errors[] = 'Diskon tidak boleh lebih besar dari subtotal barang.'; }
     return [$in, array_values(array_unique($errors)), $items];
 }
 function insert_items($docId, $items)
@@ -229,10 +237,10 @@ function documents_store()
     $id = DB::tx(function () use ($type, $u, $in, $items) {
         $now = now_sql();
         $id = DB::insert(
-            'INSERT INTO documents (type, department_id, related_department_id, priority, subject, vendor, vendor_address, pay_type, ref_document_id, w5, body, created_by, created_at, updated_at)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+            'INSERT INTO documents (type, department_id, related_department_id, priority, subject, vendor, vendor_address, pay_type, discount, ref_document_id, w5, body, created_by, created_at, updated_at)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
             [$type, $u['department_id'], $in['related_department_id'], $in['priority'], $in['subject'], $in['vendor'], $in['vendor_address'],
-             $in['pay_type'], $in['ref_document_id'], $in['w5'], $in['body'], $u['id'], $now, $now]
+             $in['pay_type'], $in['discount'], $in['ref_document_id'], $in['w5'], $in['body'], $u['id'], $now, $now]
         );
         insert_items($id, $items);
         Document::log($id, $u['id'], 'Dibuat (draft)');
@@ -251,8 +259,8 @@ function documents_update()
     if ($errors) { fail_back('documents/edit', ['id' => $d['id']], $errors); }
 
     DB::tx(function () use ($d, $u, $in, $items) {
-        DB::run('UPDATE documents SET related_department_id = ?, priority = ?, subject = ?, vendor = ?, vendor_address = ?, pay_type = ?, ref_document_id = ?, w5 = ?, body = ?, updated_at = ? WHERE id = ?',
-            [$in['related_department_id'], $in['priority'], $in['subject'], $in['vendor'], $in['vendor_address'], $in['pay_type'], $in['ref_document_id'], $in['w5'], $in['body'], now_sql(), $d['id']]);
+        DB::run('UPDATE documents SET related_department_id = ?, priority = ?, subject = ?, vendor = ?, vendor_address = ?, pay_type = ?, discount = ?, ref_document_id = ?, w5 = ?, body = ?, updated_at = ? WHERE id = ?',
+            [$in['related_department_id'], $in['priority'], $in['subject'], $in['vendor'], $in['vendor_address'], $in['pay_type'], $in['discount'], $in['ref_document_id'], $in['w5'], $in['body'], now_sql(), $d['id']]);
         DB::run('DELETE FROM document_items WHERE document_id = ?', [$d['id']]);
         insert_items($d['id'], $items);
         Document::log($d['id'], $u['id'], 'Diubah');
