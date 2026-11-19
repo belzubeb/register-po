@@ -63,7 +63,13 @@ $id = (int) $d['id'];
                     <tr><td><?= e($i['name']) ?></td><td class="r num"><?= e(num($i['qty'])) ?> <?= e($i['unit']) ?></td>
                         <?php if ($can['prices']): ?><td class="r num"><?= e(rp($i['price'])) ?></td><td class="r num"><?= e(rp($i['qty'] * $i['price'])) ?></td><?php endif; ?></tr>
                 <?php endforeach; ?>
-                <?php if ($can['prices']): ?><tr><th colspan="3" class="r">Total</th><th class="r num"><?= e(rp(Document::total($items))) ?></th></tr><?php endif; ?>
+                <?php if ($can['prices']): ?>
+                    <?php if (Document::discountOf($d) > 0): ?>
+                        <tr><td colspan="3" class="r">Subtotal</td><td class="r num"><?= e(rp(Document::total($items))) ?></td></tr>
+                        <tr><td colspan="3" class="r">Diskon</td><td class="r num">- <?= e(rp(Document::discountOf($d))) ?></td></tr>
+                    <?php endif; ?>
+                    <tr><th colspan="3" class="r">Total</th><th class="r num"><?= e(rp(Document::grandTotal($d, $items))) ?></th></tr>
+                <?php endif; ?>
                 </tbody>
             </table></div></div>
         </section>
