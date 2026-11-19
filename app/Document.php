@@ -51,6 +51,14 @@ class Document
         return $t;
     }
 
+    public static function discountOf($d) { return isset($d['discount']) ? (float) $d['discount'] : 0.0; }
+
+    /** Total akhir PO = subtotal barang dikurangi diskon (tidak pernah negatif). */
+    public static function grandTotal($d, $items)
+    {
+        return max(0.0, self::total($items) - self::discountOf($d));
+    }
+
     /** Tabel HTML dari barang lama (proposal yang dibuat sebelum ada WYSIWYG). */
     public static function legacyItemsHtml($items)
     {
