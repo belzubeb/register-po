@@ -1,0 +1,8 @@
+{
+    "name": "kantor/register-po",
+    "description": "Register Proposal dan PO",
+    "require": {
+        "php": ">=7.4",
+        "dompdf/dompdf": "^2.0"
+    }
+}
