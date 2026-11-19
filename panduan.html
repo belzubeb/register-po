@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Panduan Penggunaan Aplikasi Register Proposal & PO (Per User)</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 40px; }
+        h1 { color: #1a5276; border-bottom: 2px solid #1a5276; padding-bottom: 10px; }
+        h2 { color: #2980b9; margin-top: 25px; }
+        h3 { color: #16a085; }
+        ul, ol { margin-left: 20px; }
+        .box { background: #f4f6f7; border-left: 4px solid #2980b9; padding: 12px; margin: 15px 0; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>PANDUAN PENGGUNAAN APLIKASI REGISTER PROPOSAL & PO</h1>
+    <p><em>Panduan Berdasarkan Hak Akses (Role) Pengguna — PHP Native (XAMPP PHP 7.4)</em></p>
+
+    <h2>1. Pendahuluan</h2>
+    <p>Aplikasi <strong>Register Proposal & PO</strong> membagi hak akses pengguna (role) untuk memastikan keamanan data dan kejelasan tanggung jawab operasional.</p>
+
+    <h2>2. Hak Akses & Fitur Per User</h2>
+    
+    <h3>A. Administrator (Admin)</h3>
+    <ul>
+        <li><strong>Manajemen User:</strong> Menambah, mengubah, atau menghapus akun dan hak akses pegawai.</li>
+        <li><strong>Full CRUD:</strong> Mengelola (tambah, edit, hapus) seluruh data proposal dan PO dari semua divisi.</li>
+        <li><strong>Laporan & Rekap:</strong> Mengakses laporan rekapitulasi keseluruhan dan ekspor dokumen.</li>
+    </ul>
+
+    <h3>B. Staff / User Biasa</h3>
+    <ul>
+        <li><strong>Input Dokumen:</strong> Membuat entri proposal atau PO baru.</li>
+        <li><strong>Kelola Data Mandiri:</strong> Mengubah data proposal/PO milik sendiri yang belum dikunci.</li>
+        <li><strong>Cetak PDF:</strong> Mencetak dokumen resmi proposal atau PO ke format PDF.</li>
+    </ul>
+
+    <h2>3. Alur Penggunaan (Workflow)</h2>
+    <div class="box">
+        <ol>
+            <li><strong>Login:</strong> Akses <code>http://localhost/register-po</code>, masukkan kredensial akun.</li>
+            <li><strong>Input:</strong> Masuk ke menu Proposal/PO -> Klik <strong>Tambah</strong> -> Isi form -> <strong>Simpan</strong>.</li>
+            <li><strong>Cetak:</strong> Klik tombol <strong>PDF</strong> pada data yang ingin dicetak.</li>
+            <li><strong>Validasi (Admin):</strong> Admin memeriksa, menyetujui, atau merevisi data yang masuk.</li>
+        </ol>
+    </div>
+
+    <h2>4. Informasi Teknis</h2>
+    <table>
+        <tr>
+            <th>Komponen</th>
+            <th>Detail</th>
+        </tr>
+        <tr>
+            <td>Lokasi Folder</td>
+            <td><code>D:\xampp74\htdocs\register-po</code></td>
+        </tr>
+        <tr>
+            <td>Stack</td>
+            <td>PHP 7.4 (XAMPP), MySQL, DomPDF</td>
+        </tr>
+    </table>
+</body>
+</html>
