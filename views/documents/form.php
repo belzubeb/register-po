@@ -112,6 +112,11 @@ $backUrl = $d ? url('documents/show', ['id' => $d['id']]) : url('documents');
                         <?php endforeach; ?>
                     </div>
                     <button type="button" class="btn sm" onclick="addItem()"><?= icon('plus') ?> Tambah barang</button>
+                    <div style="margin-top:1rem;max-width:18rem">
+                        <label for="discount">Diskon (Rp)</label>
+                        <input id="discount" name="discount" type="number" step="any" min="0" value="<?= e(num($val('discount', 0))) ?>" aria-label="Diskon">
+                        <div class="hint">Dikurangkan dari subtotal. Kosongkan atau isi 0 kalau tidak ada.</div>
+                    </div>
                 </div>
             </section>
 
@@ -140,7 +145,7 @@ $backUrl = $d ? url('documents/show', ['id' => $d['id']]) : url('documents');
             <section class="card sticky">
                 <div class="card-h"><h2>Ringkasan</h2></div>
                 <div class="card-b stack">
-                    <div class="po-only"><span class="mut small">Total perkiraan</span><div class="total" id="total">Rp 0</div></div>
+                    <div class="po-only"><span class="mut small">Total setelah diskon</span><div class="total" id="total">Rp 0</div></div>
                     <p class="hint" style="margin:0">Simpan sebagai draft dulu. Setelah itu klik Ajukan di halaman detail supaya nomor terbit.</p>
                     <div class="form-actions">
                         <button type="submit" class="btn p">Simpan draft</button>
@@ -162,8 +167,10 @@ $backUrl = $d ? url('documents/show', ['id' => $d['id']]) : url('documents');
             var p = parseFloat(r.querySelector('[name$="[price]"]').value) || 0;
             s += q * p;
         });
+        var dc = document.getElementById('discount');
+        var disc = dc ? (parseFloat(dc.value) || 0) : 0;
         var t = document.getElementById('total');
-        if (t) { t.textContent = idr(s); }
+        if (t) { t.textContent = idr(Math.max(0, s - disc)); }
     }
     function addItem() {
         var row = document.createElement('div');
@@ -187,6 +194,14 @@ $backUrl = $d ? url('documents/show', ['id' => $d['id']]) : url('documents');
 
     /* ---- Editor WYSIWYG (TinyMCE lokal, tanpa internet) ---- */
     var editorStarted = false;
+    function editorMissing() {
+        var ta = document.getElementById('body');
+        if (!ta || document.getElementById('editor-warn')) { return; }
+        var m = document.createElement('div');
+        m.id = 'editor-warn'; m.className = 'flash err'; m.setAttribute('role', 'alert');
+        m.textContent = 'Editor WYSIWYG gagal dimuat: file ' + <?= json_encode(asset('vendor/tinymce/tinymce.min.js')) ?> + ' tidak ditemukan. Salin folder public/vendor/tinymce dari paket ke server, lalu muat ulang (Ctrl+F5).';
+        ta.parentNode.insertBefore(m, ta);
+    }
     // Kecilkan gambar besar supaya dokumen tidak berat; hasilnya data URI (ikut tersimpan di dokumen dan PDF).
     function imageToDataUrl(blob) {
         return new Promise(function (resolve, reject) {
@@ -251,8 +266,9 @@ $backUrl = $d ? url('documents/show', ['id' => $d['id']]) : url('documents');
         });
     }
     document.getElementById('items').addEventListener('input', recalc);
+    document.getElementById('discount').addEventListener('input', recalc);
     toggleType();
     recalc();
 </script>
-<script src="<?= e(asset('vendor/tinymce/tinymce.min.js')) ?>"></script>
+<script src="<?= e(asset('vendor/tinymce/tinymce.min.js')) ?>" onerror="editorMissing()"></script>
 <script>toggleType();</script>
