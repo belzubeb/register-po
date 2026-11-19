@@ -2,15 +2,23 @@
 // Template PDF untuk PO dan Proposal. Selalu A4 potrait, memakai kop surat (public/img/kop.png).
 // Kolom nama di tanda tangan sengaja dikosongkan: nama dan tanda tangan diisi manual di kertas.
 
+// ---- Data tetap (ubah di sini kalau ada perubahan) ----
+$company = [
+    'name'  => 'PT WOO IN',
+    'lines' => ['Kawasan Industri MM2100', 'Jl. Irian Jaya Plot MM 3-1 Cikarang Barat-Bekasi', 'Telp. 021-89982683-84, Fax. 021 - 89982685'],
+];
+
 // ---- Turunan ----
 $kopFile = ROOT . '/public/img/kop.png';
 $kop = is_file($kopFile) ? 'data:image/png;base64,' . base64_encode(file_get_contents($kopFile)) : '';
 $isPrint = !empty($print);   // true = cadangan cetak lewat browser (tanpa Dompdf)
 $isPO = $d['type'] === 'PO';
-$total = Document::total($items);
+$subtotal = Document::total($items);
+$discount = Document::discountOf($d);
+$total = Document::grandTotal($d, $items);
 $numberText = $d['number'] . ((int) $d['revision'] > 0 ? ' (Rev. ' . (int) $d['revision'] . ')' : '');
 $docDate = $d['local_at'] ? $d['local_at'] : $d['created_at'];
-$blank = max(0, 8 - count($items));
+$blank = max(0, 14 - count($items));
 $term = $d['pay_type'] === 'tempo' ? 'Term Payment : 45 Days' : ($d['pay_type'] === 'cash' ? 'Term Payment : Cash' : '');
 $priorityLabel = ['tinggi' => 'Tinggi', 'sedang' => 'Sedang', 'rendah' => 'Rendah'];
 $prio = isset($priorityLabel[$d['priority']]) ? $priorityLabel[$d['priority']] : $d['priority'];
@@ -33,6 +41,12 @@ $prio = isset($priorityLabel[$d['priority']]) ? $priorityLabel[$d['priority']] :
     .r { text-align: right; }
     .c { text-align: center; }
     .title { font-size: 20px; font-weight: bold; margin: 0 0 2px; text-align: center; letter-spacing: 1px; }
+    /* Tabel barang PO: garis tegak saja, area isi dibiarkan kosong sampai bawah (mengikuti template Excel) */
+    .led { border: 2px solid #000; }
+    .led th { border: 1px solid #000; padding: 5px 6px; text-align: center; font-weight: bold; }
+    .led td { border-left: 1px solid #000; border-right: 1px solid #000; padding: 3px 6px; vertical-align: top; height: 15px; }
+    .tot td { padding: 4px 6px; font-weight: bold; }
+    .tot td.box { border: 2px solid #000; }
     .sig th, .sig td { border: 1px solid #000; text-align: center; padding: 4px 3px; font-size: 9.5px; }
     .sig th { background: #f0f0f0; }
     .sig td.sp { height: 58px; }
@@ -65,33 +79,34 @@ $prio = isset($priorityLabel[$d['priority']]) ? $priorityLabel[$d['priority']] :
 
 <?php if ($isPO): ?>
 <!-- ======================= PURCHASE ORDER ======================= -->
-<p class="title">PURCHASE ORDER</p>
-<div class="gap"></div>
+<p class="title">Purchase Order</p>
+<div class="c"><b>PO NO. : <?= e($numberText) ?></b><br><b><?= e(date('j-M-Y', strtotime($docDate))) ?></b></div>
+<div class="gap"></div><div class="gap"></div>
 
 <table class="nb">
     <tr>
-        <td width="56%">
-            <b>To:</b> <b><?= e($d['vendor']) ?></b>
+        <td width="50%">
+            <b><?= e($company['name']) ?></b><br>
+            <?= implode('<br>', array_map('e', $company['lines'])) ?>
+        </td>
+        <td width="50%">
+            <b>To: <?= e($d['vendor']) ?></b>
             <?php if (!empty($d['vendor_address'])): ?><br><?= nl2br(e($d['vendor_address'])) ?><?php endif; ?>
             <?php if (!empty($d['vendor_phone'])): ?><br>Telp. <?= e($d['vendor_phone']) ?><?php endif; ?>
-        </td>
-        <td width="44%" class="r">
-            <b>PO NO. : <?= e($numberText) ?></b><br>
-            <?= e(fmt_date($docDate)) ?>
             <?php if (!empty($d['ref_number'])): ?><br><span class="small">Ref. proposal: <?= e($d['ref_number']) ?></span><?php endif; ?>
         </td>
     </tr>
 </table>
-<div class="gap"></div>
+<div class="gap"></div><div class="gap"></div>
 
-<table class="grid">
+<table class="led">
     <tr>
         <th width="6%">No</th><th>Uraian</th><th width="11%">Qty</th><th width="15%">Part Number</th>
-        <th width="16%">Unit Price</th><th width="16%">Total</th>
+        <th width="16%">Unit Price</th><th width="17%">Total</th>
     </tr>
     <?php foreach ($items as $k => $i): ?>
         <tr>
-            <td class="c"><?= $k + 1 ?></td>
+            <td class="c"><b><?= $k + 1 ?></b></td>
             <td><?= e($i['name']) ?></td>
             <td class="c"><?= e(num($i['qty'])) ?> <?= e($i['unit']) ?></td>
             <td class="c"><?= e(!empty($i['part_number']) ? $i['part_number'] : '-') ?></td>
@@ -104,28 +119,27 @@ $prio = isset($priorityLabel[$d['priority']]) ? $priorityLabel[$d['priority']] :
     <?php endfor; ?>
 </table>
 
-<table class="nb" style="margin-top:8px">
+<table class="nb" style="margin-top:6px">
     <tr>
-        <td width="58%">
+        <td width="48%">
             <b>Note :</b><br>
-            <?php if ($term): ?><?= e($term) ?><?php endif; ?>
+            <?php if ($term): ?>&nbsp;&nbsp;&nbsp;&nbsp;<?= e($term) ?><?php endif; ?>
         </td>
-        <td width="42%">
-            <table class="grid">
-                <tr><th style="text-align:left">TOTAL</th><th class="r"><?= e(rp($total)) ?></th></tr>
+        <td width="52%">
+            <table class="tot">
+                <tr><td class="box c" width="38%">Sub Total</td><td class="box r"><?= e(rp($subtotal)) ?></td></tr>
+                <tr><td class="c">Discount</td><td class="r"><?= $discount > 0 ? '- ' . e(rp($discount)) : e(rp(0)) ?></td></tr>
+                <tr><td class="c">TOTAL</td><td class="r"><?= e(rp($total)) ?></td></tr>
             </table>
         </td>
     </tr>
 </table>
 
-<div class="gap"></div><div class="gap"></div>
-<table class="sig">
-    <tr>
-        <th width="20%">Charged</th><th width="20%">Checked</th><th width="20%">Approved<br><span class="small">Manager lokal</span></th>
-        <th width="20%">Approved<br><span class="small">Korea</span></th><th width="20%">Pres. Dir</th>
-    </tr>
-    <tr><td class="sp"></td><td class="sp"></td><td class="sp"></td><td class="sp"></td><td class="sp"></td></tr>
-    <tr><td class="nm"></td><td class="nm"></td><td class="nm"></td><td class="nm"></td><td class="nm"></td></tr>
+<div class="gap"></div><div class="gap"></div><div class="gap"></div>
+<table class="sig" style="width:75%">
+    <tr><th width="25%">Charged</th><th width="25%">Checked</th><th width="25%">Approved</th><th width="25%">Pres. Dir</th></tr>
+    <tr><td class="sp"></td><td class="sp"></td><td class="sp"></td><td class="sp"></td></tr>
+    <tr><td class="nm"></td><td class="nm"></td><td class="nm"></td><td class="nm"></td></tr>
 </table>
 
 <?php else: ?>
